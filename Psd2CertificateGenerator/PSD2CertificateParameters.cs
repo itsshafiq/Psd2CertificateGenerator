@@ -20,28 +20,30 @@ namespace Psd2CertificateGenerator
 
     public class PSD2CertificateIssuerParameters
     {
+        [EmailAddress]
         public string EmailAddress { get; set; }
         public string CommonName { get; set; }
         public string Organization { get; set; }
         public string OrganizationUnit { get; set; }
         public string Locality { get; set; }
         public string State { get; set; }
+        [RegularExpression("^[A-Z]{2}$", ErrorMessage = "Country should be 2 uppercase English letters (ISO 3166)")]
         public string Country { get; set; }
     }
 
     public class PSD2CertificateSubjectParameters
     {
-        [Required(AllowEmptyStrings = false, ErrorMessage = "The CommonName field is required"),
+        [Required(AllowEmptyStrings = false, ErrorMessage = "The Subject.CommonName field is required"),
             RegularExpression("^[^=/,]*$", ErrorMessage = "CommonName should not include the following characters [=/,]")]
         public string CommonName { get; set; }
-        [Required(AllowEmptyStrings = false, ErrorMessage = "The Organization field is required"),
+        [Required(AllowEmptyStrings = false, ErrorMessage = "The Subject.Organization field is required"),
             RegularExpression("^[^=/,]*$", ErrorMessage = "Organization should not include the following characters [=/,]")]
         public string Organization { get; set; }
-        [Required(AllowEmptyStrings = false, ErrorMessage = "The Country field is required"),
-            RegularExpression("^[A-Z]{2}$", ErrorMessage = "Country should be 2 uppercase English letters")]
+        [Required(AllowEmptyStrings = false, ErrorMessage = "The Subject.Country field is required"),
+            RegularExpression("^[A-Z]{2}$", ErrorMessage = "Country should be 2 uppercase English letters (ISO 3166)")]
         public string Country { get; set; }
-        [Required(AllowEmptyStrings = false, ErrorMessage = "The OrganizationIdentifier field is required"),
-            RegularExpression("^PSD[A-Z]{2}-[A-Z]{2,8}-.*$", ErrorMessage = "OrganizationIdentifier should be in the format PSDCC-ZZZ-###### (C=country, Z=nca_id, #=nca_given_id)")]
+        [Required(AllowEmptyStrings = false, ErrorMessage = "The Subject.OrganizationIdentifier field is required"),
+            RegularExpression("^PSD[A-Z]{2}-[A-Z]{2,8}-.*$", ErrorMessage = "OrganizationIdentifier should be in the format PSDCC-ZZZ-###### (C=country_iso_3166, Z=nca_id, #=nca_given_id)")]
         public string OrganizationIdentifier { get; set; }
     }
 
@@ -52,6 +54,13 @@ namespace Psd2CertificateGenerator
         public PSD2CertificateSubjectParameters Subject { get; set; }
         public PSD2Roles Roles { set; get; }
         public PSD2CertificateType CertificateType { get; set; }
-        public byte RetentionPeriod { get; set; } = 20; // default
+        public byte RetentionPeriod { get; set; } = 20;
+        [Required(AllowEmptyStrings = false, ErrorMessage = "The NcaName field is required"),
+            MaxLength(256, ErrorMessage = "NcaName must not be longer than 256 characters")]
+        public string NcaName { get; set; }
+        [Required(AllowEmptyStrings = false, ErrorMessage = "The NcaId field is required"),
+            RegularExpression("^[A-Z]{2}-[A-Z]{2,8}$", ErrorMessage = "NcaId should be in the format CC-ZZZ (C=country_iso_3166, Z=nca_id)"),
+            MaxLength(256, ErrorMessage = "NcaId must not be longer than 256 characters")]
+        public string NcaId { get; set; }
     }
 }

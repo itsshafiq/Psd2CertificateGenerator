@@ -27,7 +27,9 @@ namespace Psd2CertificateGenerator.CLI
                     Country = "IL"
                 },
                 RetentionPeriod = 20,
-                Roles = PSD2Roles.PSP_AI | PSD2Roles.PSP_PI
+                Roles = PSD2Roles.PSP_AI | PSD2Roles.PSP_PI,
+                NcaId = "IL-PAY",
+                NcaName = "Payoneer"
             });
 
             Console.WriteLine(psd2c.PublicKey);

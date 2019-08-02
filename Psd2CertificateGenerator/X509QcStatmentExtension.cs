@@ -19,12 +19,12 @@ namespace Psd2CertificateGenerator
         private const string OID_PSP_AI = "0.4.0.19495.1.3";
         private const string OID_PSP_IC = "0.4.0.19495.1.4";
 
-        public X509QcStatmentExtension(PSD2Roles roles, PSD2CertificateType certificateType, byte retentionPeriod, string organizationName, string organizationCountry, bool critical = false) : 
-            base(OID_qcStatements, EncodePSD2QcStatmentExtension(roles, certificateType, retentionPeriod, organizationName, organizationCountry), critical)
+        public X509QcStatmentExtension(PSD2Roles roles, PSD2CertificateType certificateType, byte retentionPeriod, string ncaName, string ncaId, bool critical = false) : 
+            base(OID_qcStatements, EncodePSD2QcStatmentExtension(roles, certificateType, retentionPeriod, ncaName, ncaId), critical)
         {
         }
 
-        private static byte[] EncodePSD2QcStatmentExtension(PSD2Roles roles, PSD2CertificateType certType, byte retentionPeriod, string organizationName, string organizationCountry)
+        private static byte[] EncodePSD2QcStatmentExtension(PSD2Roles roles, PSD2CertificateType certType, byte retentionPeriod, string ncaName, string ncaId)
         {
             var rolesSeq = new List<byte[]>();
             if (roles.HasFlag(PSD2Roles.PSP_AS))
@@ -42,7 +42,7 @@ namespace Psd2CertificateGenerator
                 ),
                 Asn1Encoder.Sequence(
                     Asn1Encoder.ObjectIdentifier(OID_QcRetentionPeriod), // number of years after the validity period the certificate will be stored in the issuer's archive
-                    Asn1Encoder.IntegerBigEndian(new byte[] { 20 })
+                    Asn1Encoder.IntegerBigEndian(new[] { retentionPeriod })
                 ),
                 Asn1Encoder.Sequence(
                     Asn1Encoder.ObjectIdentifier(OID_QcsQcSSCD) // CAs claiming to issue certificates where the private key related to the certified public key resides in a Secure Signature Creation Device(SSCD)
@@ -57,8 +57,8 @@ namespace Psd2CertificateGenerator
                     Asn1Encoder.ObjectIdentifier(OID_PSD2qcStatement),
                     Asn1Encoder.Sequence(
                         Asn1Encoder.Sequence(rolesSeq.ToArray()),
-                        Asn1Encoder.Utf8String(organizationName),
-                        Asn1Encoder.Utf8String(organizationCountry)
+                        Asn1Encoder.Utf8String(ncaName),
+                        Asn1Encoder.Utf8String(ncaId)
                     )
                 )
             );

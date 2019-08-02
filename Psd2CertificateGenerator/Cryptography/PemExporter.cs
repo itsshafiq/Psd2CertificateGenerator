@@ -2,18 +2,21 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Psd2CertificateGenerator.Cryptography
 {
     public class PemExporter
     {
-        const string OID_rsaEncryption = "1.2.840.113549.1.1.1";
+        private static Regex Base64PEMLineBreaks = new Regex(".{1,64}");
+        private const string OID_rsaEncryption = "1.2.840.113549.1.1.1";
 
+        
         public static string ToPem(string label, byte[] buffer)
         {
             var sb = new StringBuilder();
             sb.AppendLine($"-----BEGIN {label.ToUpper()}-----");
-            sb.AppendLine(Convert.ToBase64String(buffer, Base64FormattingOptions.InsertLineBreaks));
+            sb.AppendLine(string.Join("\n", Base64PEMLineBreaks.Matches(Convert.ToBase64String(buffer))));
             sb.AppendLine($"-----END {label.ToUpper()}-----");
             return sb.ToString();
         }

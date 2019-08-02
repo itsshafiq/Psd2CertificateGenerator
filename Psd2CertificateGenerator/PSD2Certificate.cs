@@ -1,6 +1,7 @@
 ﻿using Psd2CertificateGenerator.Cryptography;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -25,8 +26,14 @@ namespace Psd2CertificateGenerator
 
         public static PSD2Certificate createRSAKeysAndCertificate(PSD2CertificateParameters parameters)
         {
-            parameters.Subject.Organization = parameters.Subject.Organization.Replace("=", "").Replace(",", "").Replace("/", "");
-            parameters.Subject.Country = parameters.Subject.Country.ToUpper().Substring(0, Math.Min(2, parameters.Subject.Country.Length));
+            var context = new ValidationContext(parameters, null, null);
+            var validationResults = new List<ValidationResult>();
+
+            bool valid = Validator.TryValidateObject(parameters, context, validationResults, true);
+            if (!valid)
+            {
+                throw new ValidationException("Invalid Request", new AggregateException(validationResults.Select(validationResult => new ValidationException(validationResult.ErrorMessage))));
+            }
 
             var subjectDN = CreateDistinguishedName(new Dictionary<string, string>
             {
@@ -52,8 +59,9 @@ namespace Psd2CertificateGenerator
                 var request = new CertificateRequest(subjectDN, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 
                 request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.NonRepudiation | X509KeyUsageFlags.KeyCertSign | X509KeyUsageFlags.CrlSign, false));
-                request.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(new OidCollection { new Oid(OID_serverAuth), new Oid(OID_clientAuth) }, false));
-                request.CertificateExtensions.Add(new X509QcStatmentExtension(parameters.Roles, parameters.CertificateType, parameters.RetentionPeriod, parameters.Subject.Organization, parameters.Subject.Country, false));
+                if (parameters.CertificateType == PSD2CertificateType.QWAC) // only for qwac
+                    request.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(new OidCollection { new Oid(OID_serverAuth), new Oid(OID_clientAuth) }, false));                
+                request.CertificateExtensions.Add(new X509QcStatmentExtension(parameters.Roles, parameters.CertificateType, parameters.RetentionPeriod, parameters.NcaName, parameters.NcaId, false));
 
                 var sanBuilder = new SubjectAlternativeNameBuilder();
                 sanBuilder.AddDnsName(issuerDnsName);
