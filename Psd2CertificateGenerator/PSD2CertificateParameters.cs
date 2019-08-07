@@ -12,10 +12,14 @@ namespace Psd2CertificateGenerator
     [Flags]
     public enum PSD2Roles
     {
+        None = 0,
         PSP_AI = 0x01,
         PSP_PI = 0x02,
+        PSP_AI_PSP_PI = PSP_AI | PSP_PI,
         PSP_IC = 0x04,
-        PSP_AS = 0x08
+        PSP_AI_PSP_PI_PSP_IC = PSP_AI | PSP_PI | PSP_IC,
+        PSP_AS = 0x08,
+        All = PSP_AI | PSP_PI | PSP_IC | PSP_AS,
     }
 
     public class PSD2CertificateIssuerParameters

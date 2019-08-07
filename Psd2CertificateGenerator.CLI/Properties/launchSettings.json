@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Psd2CertificateGenerator.CLI": {
+      "commandName": "Project",
+      "commandLineArgs": "-c IL -a PSDIL-PAY-010101 -n \"Eli Inc\" "
+    }
+  }
+}
